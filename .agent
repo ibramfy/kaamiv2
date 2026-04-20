@@ -1,0 +1,245 @@
+1. CORE PRINCIPLES
+
+Gunakan arsitektur modular berbasis section.
+
+Pisahkan struktur (Astro), styling (Tailwind utility), dan animasi (GSAP).
+
+Hindari duplikasi logic dan konfigurasi.
+
+Optimalkan untuk static-first Astro.
+
+Semua animasi harus dapat di-cleanup.
+
+Semua HTML harus semantic.
+
+2. ASTRO RULES
+2.1 Rendering Philosophy
+
+Default adalah static rendering.
+
+Gunakan client:* hanya jika benar-benar butuh DOM interactivity.
+
+Jangan hydration seluruh halaman jika hanya 1 section yang interaktif.
+
+2.2 Component Structure
+
+Semua file .astro harus mengikuti struktur ini:
+
+Frontmatter (---) → import dan logic ringan
+
+HTML markup → Tailwind only
+
+<script> di bawah → GSAP / Lenis
+
+Struktur wajib:
+
+---
+/* imports */
+---
+
+<section>
+  <!-- markup -->
+</section>
+
+<script>
+  // animation logic
+</script>
+
+Tidak boleh:
+
+<style>
+
+CSS global
+
+Inline style attribute
+
+3. TAILWIND STRICT POLICY
+3.1 Styling System
+
+Gunakan Tailwind utility classes 100%.
+
+Tidak boleh menggunakan:
+
+<style>
+
+file .css
+
+CSS module
+
+Jika value tidak ada di config, gunakan arbitrary value:
+
+w-[453px]
+
+mt-[72px]
+
+3.2 Layout Discipline
+
+Gunakan container mx-auto px-6
+
+Gunakan relative untuk parent animasi
+
+Gunakan z-10, z-20 untuk layering
+
+Hindari nested div tidak perlu
+
+3.3 Initial Animation State
+
+State awal animasi harus dari Tailwind:
+
+opacity-0
+
+translate-y-10
+
+scale-95
+
+invisible
+
+GSAP hanya mengubah ke visible state.
+
+4. GSAP RULES
+4.1 Selector Policy
+
+Gunakan class selector:
+.hero-title
+.card-item
+
+Hindari ID kecuali benar-benar unik global.
+
+4.2 Scope Policy
+
+Setiap animasi harus scoped.
+
+Gunakan:
+
+const ctx = gsap.context(() => {
+  ...
+})
+
+Dan cleanup:
+
+return () => ctx.revert()
+4.3 ScrollTrigger + Lenis Sync
+
+Wajib:
+
+lenis.on('scroll', ScrollTrigger.update)
+
+Dan:
+
+gsap.ticker.add((time) => {
+  lenis.raf(time * 1000)
+})
+
+Jangan gunakan window.addEventListener("scroll") manual.
+
+5. LENIS RULES
+
+Lenis hanya di-init sekali.
+
+Tidak boleh init Lenis di setiap component.
+
+Harus berada di Layout level atau global script.
+
+Tidak boleh:
+
+Multiple Lenis instance.
+
+Scroll handler manual tambahan.
+
+6. FOLDER STRUCTURE RULE
+
+Struktur wajib:
+
+src/
+ ├── layouts/
+ ├── components/
+ │   ├── ui/
+ │   ├── sections/
+ ├── lib/
+ │   ├── gsap/
+ │   ├── lenis/
+ ├── pages/
+
+Aturan:
+
+ui/ → component kecil reusable
+
+sections/ → blok halaman besar
+
+lib/gsap/ → config animation
+
+lib/lenis/ → smooth scroll config
+
+Tidak boleh:
+
+GSAP logic tersebar di banyak tempat tanpa struktur.
+
+7. SEMANTIC HTML RULE
+
+Gunakan:
+
+<header>
+
+<main>
+
+<section>
+
+<article>
+
+<nav>
+
+<footer>
+
+Hindari div-only layout.
+
+Setiap section harus memiliki tujuan jelas.
+
+8. PERFORMANCE RULE
+
+Gunakan prefers-reduced-motion.
+
+Hindari animasi berat di mobile.
+
+Gunakan will-change hanya saat perlu.
+
+Lazy load gambar besar.
+
+Tidak ada console.log di production.
+
+9. PROHIBITED ACTIONS
+
+Dilarang:
+
+Inline style
+
+CSS custom
+
+Global scroll listener manual
+
+Multiple Lenis instance
+
+Hardcoded pixel spacing tanpa alasan
+
+Animation tanpa cleanup
+
+Menggunakan ID sebagai selector utama
+
+10. DEVELOPMENT WORKFLOW
+
+Urutan wajib:
+
+Buat semantic layout.
+
+Styling Tailwind sampai stabil.
+
+Tambahkan initial animation state.
+
+Implement GSAP.
+
+Sinkronisasi Lenis + ScrollTrigger.
+
+Test mobile.
+
+Build production.
+
+Audit performance.

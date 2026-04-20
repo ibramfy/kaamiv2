@@ -1,0 +1,162 @@
+---
+
+---
+
+<!--
+  Spacer wrapper dengan total tinggi untuk menampung semua fase animasi:
+  - Animasi enter (scroll pertama)    → tidak diperlukan pin, masuk natural
+  - Hold state (full visible)         → selama ~50dvh scroll
+  - Marquee effect (pinned scrub)     → 200dvh scroll
+  Total: ~300dvh amply
+-->
+<div
+    id="marquee-spacer"
+    class="relative w-full"
+    style="height: 400dvh;"
+>
+    <!--
+      Section ini sticky, berfungsi seperti "pinned" tapi tanpa GSAP pin.
+      GSAP hanya scrub animasi di dalam; section tetap di atas berkat `sticky top-0`.
+    -->
+    <section
+        id="marquee-section"
+        class="sticky top-0 w-full h-[100dvh] bg-[#F5F5F7] flex items-center justify-center overflow-hidden"
+    >
+        <div class="mx-auto w-full max-w-7xl px-4 md:px-6">
+            <div class="grid grid-cols-3 items-center gap-4 md:gap-8">
+                <!-- Left Marquee -->
+                <div
+                    id="left-wrapper"
+                    class="relative h-[400px] md:h-[500px] overflow-hidden rounded-2xl"
+                >
+                    <div class="marquee-left w-full flex flex-col gap-4 md:gap-6">
+                        <div class="aspect-[3/4] w-full bg-gray-200 rounded-xl"></div>
+                        <div class="aspect-[3/4] w-full bg-gray-300 rounded-xl"></div>
+                        <div class="aspect-[3/4] w-full bg-gray-200 rounded-xl"></div>
+                        <div class="aspect-[3/4] w-full bg-gray-300 rounded-xl"></div>
+                    </div>
+                </div>
+
+                <!-- Center Text -->
+                <div id="center-text" class="px-2 md:px-8 text-center">
+                    <p
+                        class="text-xl md:text-3xl lg:text-4xl font-light leading-relaxed text-neutral-900"
+                    >
+                        Membangun visi Anda lewat presisi setiap garis.
+                    </p>
+                </div>
+
+                <!-- Right Marquee -->
+                <div
+                    id="right-wrapper"
+                    class="relative h-[400px] md:h-[500px] overflow-hidden rounded-2xl"
+                >
+                    <div class="marquee-right w-full flex flex-col gap-4 md:gap-6">
+                        <div class="aspect-[3/4] w-full bg-gray-300 rounded-xl"></div>
+                        <div class="aspect-[3/4] w-full bg-gray-200 rounded-xl"></div>
+                        <div class="aspect-[3/4] w-full bg-gray-300 rounded-xl"></div>
+                        <div class="aspect-[3/4] w-full bg-gray-200 rounded-xl"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    function init() {
+        const spacer  = document.getElementById("marquee-spacer");
+        const section = document.getElementById("marquee-section");
+        const leftWrapper  = document.getElementById("left-wrapper");
+        const rightWrapper = document.getElementById("right-wrapper");
+        const centerText   = document.getElementById("center-text");
+        const leftMarquee  = document.querySelector<HTMLElement>(".marquee-left");
+        const rightMarquee = document.querySelector<HTMLElement>(".marquee-right");
+
+        if (!spacer || !section || !leftWrapper || !rightWrapper || !centerText) return;
+
+        const ctx = gsap.context(() => {
+            // ─── Initial State ───────────────────────────────────────────
+            gsap.set(centerText, { opacity: 0, y: 40 });
+            gsap.set([leftWrapper, rightWrapper], { opacity: 0 });
+            // Left starts scrolled up (-50%) → akan turun ke 0%
+            gsap.set(leftMarquee,  { yPercent: -50 });
+            // Right starts at 0% → akan naik ke -50%
+            gsap.set(rightMarquee, { yPercent: 0 });
+
+            // ─── Phase 1: Text muncul ─────────────────────────────────────
+            // Dipicu saat bagian atas spacer menyentuh tengah viewport
+            gsap.to(centerText, {
+                opacity: 1,
+                y: 0,
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: spacer,
+                    start: "top center",    // spacer mulai masuk tengah layar
+                    end: "top top",         // selesai saat spacer di atas
+                    scrub: 1,
+                },
+            });
+
+            // ─── Phase 2: Placeholder gambar muncul ──────────────────────
+            // Muncul sedikit setelah text (start sedikit lebih late)
+            gsap.to([leftWrapper, rightWrapper], {
+                opacity: 1,
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: spacer,
+                    start: "top 40%",       // sedikit setelah text
+                    end: "top top",
+                    scrub: 1,
+                },
+            });
+
+            // ─── Phase 3: Marquee effect (kiri turun, kanan naik) ────────
+            // Berjalan saat spacer sudah di posisi pinned (top:0)
+            // Berlangsung selama 200dvh scroll (50% dari total 400dvh spacer)
+            gsap.to(leftMarquee, {
+                yPercent: 0,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: spacer,
+                    start: "top top",       // phase marquee mulai saat pinned
+                    end: "+=200%",          // berlangsung 200dvh
+                    scrub: 1,
+                },
+            });
+
+            gsap.to(rightMarquee, {
+                yPercent: -50,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: spacer,
+                    start: "top top",
+                    end: "+=200%",
+                    scrub: 1,
+                },
+            });
+        }, spacer);
+
+        return ctx;
+    }
+
+    let ctx: any;
+
+    window.addEventListener("preloaderComplete", () => {
+        ctx = init();
+    });
+
+    // Fallback jika preloaderComplete tidak ada
+    window.addEventListener("load", () => {
+        if (!ctx) ctx = init();
+    });
+
+    document.addEventListener("astro:before-swap", () => {
+        if (ctx) ctx.revert();
+    });
+</script>

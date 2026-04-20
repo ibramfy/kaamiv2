@@ -1,0 +1,222 @@
+---
+
+---
+
+<script is:inline>
+    // Execute synchronously to prevent Flash of Unstyled Content (FOUC)
+    (function () {
+        try {
+            const preloaderShown = sessionStorage.getItem("preloaderShown");
+            const currentBreakpoint =
+                window.innerWidth < 768 ? "mobile" : "desktop";
+            const lastBreakpoint = localStorage.getItem("lastBreakpoint");
+
+            const shouldShow =
+                preloaderShown !== "true" ||
+                currentBreakpoint !== lastBreakpoint ||
+                lastBreakpoint === null;
+
+            if (!shouldShow) {
+                // Instantly hide preloader before rendering
+                document.documentElement.classList.add("skip-preloader");
+            } else {
+                // Lock scroll during preloader
+                document.documentElement.classList.add("lock-scroll");
+            }
+        } catch (e) {
+            console.warn("Storage access denied for preloader logic", e);
+            document.documentElement.classList.add("lock-scroll");
+        }
+    })();
+</script>
+
+<style>
+    /* If skipped, immediately hide the preloader AND enable scrolling */
+    :global(.skip-preloader) #preloader {
+        display: none !important;
+    }
+
+    /* Lock scroll early on the HTML tag */
+    :global(.lock-scroll) {
+        overflow: hidden !important;
+    }
+</style>
+
+<div
+    id="preloader"
+    class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#F5F5F7]"
+>
+    <div class="overflow-hidden">
+        <h1
+            id="preloader-text"
+            class="translate-y-[100%] text-4xl font-light uppercase tracking-widest text-[#1d1d1f] sm:text-6xl"
+        >
+        </h1>
+    </div>
+    <div class="mt-8 h-[2px] w-48 overflow-hidden rounded-full bg-gray-200">
+        <div id="preloader-bar" class="h-full w-0 bg-[#1d1d1f]"></div>
+    </div>
+    <div
+        id="preloader-percentage"
+        class="mt-4 text-sm font-light text-gray-500"
+    >
+        0%
+    </div>
+</div>
+
+<script>
+    import { gsap } from "gsap";
+
+    function initPreloader() {
+        const preloader = document.getElementById("preloader");
+        const preloaderText = document.getElementById("preloader-text");
+        const preloaderBar = document.getElementById("preloader-bar");
+        const preloaderPercentage = document.getElementById(
+            "preloader-percentage",
+        );
+
+        if (
+            !preloader ||
+            !preloaderText ||
+            !preloaderBar ||
+            !preloaderPercentage
+        )
+            return;
+
+        // Prevent multiple initializations in case of Astro view transitions or duplicate events
+        if (preloader.dataset.initialized === "true") return;
+        preloader.dataset.initialized = "true";
+
+        // Check if inline script decided to skip preloader
+        if (document.documentElement.classList.contains("skip-preloader")) {
+            document.documentElement.classList.remove("lock-scroll");
+            document.body.classList.remove("overflow-hidden");
+
+            // Dispatch event to start other animations (like SequenceScroll) immediately
+            window.setTimeout(() => {
+                window.dispatchEvent(new Event("preloaderComplete"));
+            }, 0);
+            return;
+        }
+
+        const currentBP = window.innerWidth < 768 ? "mobile" : "desktop";
+
+        // Simulate loading progress
+        let progress = 0;
+
+        // We'll advance rapidly to 90%, then wait for window.onload / complete
+        const interval = setInterval(() => {
+            progress += Math.random() * 10;
+            if (progress >= 90) {
+                progress = 90;
+                clearInterval(interval);
+            }
+            updateProgress(progress);
+        }, 100);
+
+        function updateProgress(val: number) {
+            if (preloaderBar)
+                gsap.to(preloaderBar, { width: `${val}%`, duration: 0.2 });
+            if (preloaderPercentage)
+                preloaderPercentage.textContent = `${Math.floor(val)}%`;
+        }
+
+        // Initial text reveal animation
+        const tl = gsap.timeline();
+        tl.to(preloaderText, {
+            y: "0%",
+            duration: 1,
+            ease: "power4.out",
+            delay: 0.2,
+        });
+
+        // When everything is fully loaded
+        const finishLoading = () => {
+            clearInterval(interval);
+            updateProgress(100);
+
+            // Set storage flags after preloader shows completely once
+            try {
+                sessionStorage.setItem("preloaderShown", "true");
+                localStorage.setItem("lastBreakpoint", currentBP);
+            } catch (e) {
+                console.warn("Storage save failed", e);
+            }
+
+            const hideTl = gsap.timeline({
+                delay: 0.5,
+                onComplete: () => {
+                    preloader.style.display = "none";
+                    document.documentElement.classList.remove("lock-scroll");
+                    document.body.classList.remove("overflow-hidden");
+
+                    // Mark global skipping for subsequent view transition navigations
+                    document.documentElement.classList.add("skip-preloader");
+
+                    // Dispatch event to start other animations
+                    window.dispatchEvent(new Event("preloaderComplete"));
+                },
+            });
+
+            // Split text and move it out
+            hideTl
+                .to(
+                    preloaderText,
+                    {
+                        y: "-100%",
+                        duration: 0.8,
+                        ease: "power4.inOut",
+                    },
+                    0,
+                )
+                .to(
+                    [preloaderBar, preloaderPercentage],
+                    {
+                        opacity: 0,
+                        duration: 0.4,
+                    },
+                    0,
+                )
+                // Slide preloader up
+                .to(
+                    preloader,
+                    {
+                        yPercent: -100,
+                        duration: 1,
+                        ease: "expo.inOut",
+                    },
+                    0.4,
+                );
+        };
+
+        if (document.readyState === "complete") {
+            finishLoading();
+        } else {
+            window.addEventListener("load", finishLoading);
+        }
+    }
+
+    // Try multiple hooks to capture environment context perfectly
+    document.addEventListener("DOMContentLoaded", initPreloader);
+
+    // Astro View Transitions Support
+    document.addEventListener("astro:page-load", () => {
+        // Evaluate conditions on subsequent pages because inline script is NOT executed after initial swap
+        try {
+            const preloaderShown = sessionStorage.getItem("preloaderShown");
+            const currentBreakpoint =
+                window.innerWidth < 768 ? "mobile" : "desktop";
+            const lastBreakpoint = localStorage.getItem("lastBreakpoint");
+
+            if (
+                preloaderShown === "true" &&
+                currentBreakpoint === lastBreakpoint
+            ) {
+                document.documentElement.classList.add("skip-preloader");
+                document.documentElement.classList.remove("lock-scroll");
+            }
+        } catch (e) {}
+
+        initPreloader();
+    });
+</script>

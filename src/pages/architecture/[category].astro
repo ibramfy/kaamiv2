@@ -1,0 +1,100 @@
+---
+import ProjectCard from "../../components/cards/ProjectCard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const { category } = Astro.params;
+
+export function getStaticPaths() {
+    return [
+        { params: { category: "hospitality" } },
+        { params: { category: "residential" } },
+        { params: { category: "commercial" } },
+    ];
+}
+
+const projects = [
+    {
+        title: "Skyline Residence",
+        description:
+            "A tropical passive-cooling approach to dense urban living.",
+        year: "2024",
+    },
+    {
+        title: "Coastal Retreat",
+        description: "Minimal intervention architecture facing the open sea.",
+        year: "2023",
+    },
+    {
+        title: "Urban Courtyard",
+        description: "Reinterpreting internal void for contemporary housing.",
+        year: "2022",
+    },
+    {
+        title: "Glass Pavilion",
+        description: "Transparency and structure in delicate balance.",
+        year: "2024",
+    },
+    {
+        title: "Concrete Atelier",
+        description: "Material honesty expressed through modular rhythm.",
+        year: "2023",
+    },
+    {
+        title: "Tropical Office",
+        description: "Climate-responsive workspace in urban context.",
+        year: "2022",
+    },
+];
+---
+
+<BaseLayout
+    title={category
+        ? category.charAt(0).toUpperCase() + category.slice(1)
+        : "Architecture"}
+>
+    <!-- Hero -->
+    <section class="bg-[#F5F5F7] px-6 pt-40 pb-24 md:px-20">
+        <div class="text-center">
+            <h1 class="uppercase mt-12 text-lg font-light text-[#1d1d1f]">
+                {category}
+            </h1>
+        </div>
+    </section>
+
+    <!-- Projects -->
+    <section class="bg-[#F5F5F7] px-6 pb-32 md:px-20">
+        <div
+            class="grid grid-cols-1 gap-12 md:grid-cols-7 md:gap-8 md:auto-rows-fr"
+        >
+            <!-- 3 -->
+            <div class="md:col-span-3 h-full">
+                <ProjectCard project={projects[0]} category={category} />
+            </div>
+
+            <!-- 2 -->
+            <div class="md:col-span-2 h-full">
+                <ProjectCard project={projects[1]} category={category} />
+            </div>
+
+            <!-- 2 -->
+            <div class="md:col-span-2 h-full">
+                <ProjectCard project={projects[2]} category={category} />
+            </div>
+
+            <!-- 2 -->
+            <div class="md:col-span-2 h-full">
+                <ProjectCard project={projects[3]} category={category} />
+            </div>
+
+            <!-- 2 -->
+            <div class="md:col-span-2 h-full">
+                <ProjectCard project={projects[4]} category={category} />
+            </div>
+
+            <!-- 3 -->
+            <div class="md:col-span-3 h-full">
+                <ProjectCard project={projects[5]} category={category} />
+            </div>
+        </div>
+    </section>
+</BaseLayout>

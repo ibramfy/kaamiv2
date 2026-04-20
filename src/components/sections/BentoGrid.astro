@@ -1,0 +1,184 @@
+---
+// BentoGrid.astro
+// Animasi: Grid atas kiri→kanan, Grid bawah kanan→kiri, Text spacing merekat, semua bersamaan
+import BentoCard from "../ui/BentoCard.astro";
+---
+
+<section
+    id="bento-grid-section"
+    class="mx-auto w-full max-w-7xl h-[100dvh] flex flex-col justify-center gap-6 px-4 sm:px-6 lg:px-8 overflow-hidden py-10"
+>
+    <div
+        id="bento-top"
+        class="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-3 h-[25vh] md:h-[30vh]"
+    >
+        <BentoCard
+            image="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800"
+            alt="Architecture 1"
+            title="The Glass Pavilion"
+            subtitle="Residential"
+        />
+        <BentoCard
+            image="https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&q=80&w=800"
+            alt="Architecture 2"
+            title="Urban Oasis"
+            subtitle="Commercial"
+        />
+        <BentoCard
+            image="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800"
+            alt="Architecture 3"
+            title="Modern Minimalist"
+            subtitle="Residential"
+        />
+    </div>
+
+    <div
+        id="text-spacer"
+        class="flex-1 flex items-center justify-center min-h-[120px] overflow-hidden"
+    >
+        <h2
+            id="spacer-text"
+            class="text-4xl md:text-6xl lg:text-7xl font-oswald uppercase tracking-tighter text-center leading-tight"
+            style="word-spacing: 200px;"
+        >
+            Explore Our Work
+        </h2>
+    </div>
+
+    <div
+        id="bento-bottom"
+        class="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-3 h-[25vh] md:h-[30vh]"
+    >
+        <BentoCard
+            image="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&q=80&w=800"
+            alt="Architecture 4"
+            title="Brutalism Reimagined"
+            subtitle="Cultural"
+        />
+        <BentoCard
+            image="https://images.unsplash.com/photo-1600573472592-401b489a80eb?auto=format&fit=crop&q=80&w=800"
+            alt="Architecture 5"
+            title="Coastal Retreat"
+            subtitle="Hospitality"
+        />
+        <BentoCard variant="dark-cta" ctaHref="/architecture/projects" />
+    </div>
+</section>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    function init() {
+        const section = document.getElementById("bento-grid-section");
+        if (!section) return;
+
+        const ctx = gsap.context(() => {
+            const topGridItems = section.querySelectorAll(
+                "#bento-top .bento-item",
+            );
+            const bottomGridItems = section.querySelectorAll(
+                "#bento-bottom .bento-item",
+            );
+            const spacerText = section.querySelector("#spacer-text");
+
+            // Set initial state - tanpa opacity
+            gsap.set(topGridItems, { x: -150 });
+            gsap.set(bottomGridItems, { x: 150 });
+
+            // Timeline untuk semua animasi berjalan bersamaan
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: section,
+                    start: "top bottom",
+                    end: "top top",
+                    scrub: 1,
+                    pin: false,
+                },
+            });
+
+            // Grid atas: kiri ke kanan
+            tl.to(
+                topGridItems,
+                {
+                    x: 0,
+                    stagger: 0.05,
+                    ease: "none",
+                    duration: 1,
+                },
+                0,
+            );
+
+            // Grid bawah: kanan ke kiri
+            tl.to(
+                bottomGridItems,
+                {
+                    x: 0,
+                    stagger: 0.05,
+                    ease: "none",
+                    duration: 1,
+                },
+                0,
+            );
+
+            // Text: word-spacing dari 200px (merenggang) ke normal (merekat)
+            tl.to(
+                spacerText,
+                {
+                    wordSpacing: "0px",
+                    ease: "none",
+                    duration: 1,
+                },
+                0,
+            );
+
+            // ── Timeline 2: EXIT (pinned scrub) ──────────────────────────────
+            // Aktif saat section sudah penuh di viewport, scroll → animasi exit
+            const tlOut = gsap.timeline({
+                scrollTrigger: {
+                    trigger: section,
+                    start: "top top",   // section penuh = mulai pin
+                    end: "+=80%",       // hold 80vh untuk ruang animasi keluar
+                    pin: true,
+                    scrub: 1,           // Samakan dengan scrub di atas agar sama smooth-nya
+                },
+            });
+
+            // Grid atas: lanjut ke kanan sambil fade out perlahan
+            tlOut.to(
+                topGridItems,
+                { x: 300, opacity: 0, stagger: 0.05, ease: "none", duration: 1 },
+                0,
+            );
+
+            // Grid bawah: lanjut ke kiri sambil fade out perlahan
+            tlOut.to(
+                bottomGridItems,
+                { x: -300, opacity: 0, stagger: 0.05, ease: "none", duration: 1 },
+                0,
+            );
+
+            // Text: fade out + scale sedikit ke bawah
+            tlOut.to(
+                spacerText,
+                { opacity: 0, scale: 0.95, ease: "none", duration: 1 },
+                0,
+            );
+        }, section);
+
+        return ctx;
+    }
+
+    let ctx: any;
+
+    window.addEventListener("preloaderComplete", () => {
+        ctx = init();
+    });
+
+    // Cleanup saat Astro pindah halaman agar tidak ada memory leak / pin spacer tersisa
+    document.addEventListener("astro:before-swap", () => {
+        if (ctx) ctx.revert();
+    });
+</script>

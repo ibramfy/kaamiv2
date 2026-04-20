@@ -1,0 +1,156 @@
+---
+
+---
+
+<!--
+  Wrapper dengan tinggi yang cukup untuk menampung:
+  - Animasi enter (saat section masuk dari bawah)  → 100vh scroll
+  - State pinned (konten terlihat penuh)             → 0 (langsung)
+  - Animasi exit (pinned + scroll menghilang)        → 100vh scroll
+  Total height wrapper: 3 × 100dvh agar scroll tidak bocor
+-->
+<div
+    id="intro-spacer"
+    class="relative w-full"
+    style="height: 300dvh;"
+>
+    <!--
+      Section ini di-pin oleh GSAP saat scrollTrigger aktif.
+      Harus berukuran 100dvh dan punya background agar tidak tembus pandang.
+    -->
+    <section
+        id="intro-section"
+        class="sticky top-0 w-full h-[100dvh] bg-[#F5F5F7] flex flex-col items-center justify-center overflow-hidden"
+    >
+        <div
+            id="intro-content"
+            class="mx-auto w-full max-w-6xl px-6 grid grid-cols-1 gap-12 md:grid-cols-2 items-stretch"
+        >
+            <!-- Left: Image Placeholder -->
+            <div class="h-full w-full min-h-[300px]">
+                <div
+                    class="h-full w-full rounded-2xl bg-gray-200 flex items-center justify-center"
+                >
+                    <span class="text-sm tracking-wide text-gray-500">
+                        Image Placeholder
+                    </span>
+                </div>
+            </div>
+
+            <!-- Right: Content -->
+            <div class="flex flex-col justify-between">
+                <div>
+                    <!-- Studio Name / Main Heading -->
+                    <h2
+                        class="mt-3 text-3xl md:text-4xl font-light text-neutral-900"
+                    >
+                        Introduction Kaami
+                    </h2>
+
+                    <!-- Description -->
+                    <p class="mt-6 text-lg leading-relaxed text-neutral-700">
+                        Kaami adalah studio arsitektur yang bekerja lintas
+                        pendekatan. Kami merancang ruang berdasarkan kebutuhan,
+                        konteks, dan karakter proyek—bukan sekadar mengikuti tren
+                        atau terpaku pada satu gaya.
+                    </p>
+                </div>
+
+                <!-- Three Points -->
+                <div class="mt-14 space-y-8">
+                    <div>
+                        <h4 class="text-lg font-medium text-neutral-900">
+                            Context-Based Design
+                        </h4>
+                        <p class="mt-2 text-neutral-600 leading-relaxed">
+                            Setiap proyek diperlakukan unik. Pendekatan bisa
+                            sederhana, bisa eksploratif, tergantung kebutuhan dan
+                            lokasi.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-medium text-neutral-900">
+                            Adaptive Approach
+                        </h4>
+                        <p class="mt-2 text-neutral-600 leading-relaxed">
+                            Mampu bergerak dari desain yang fungsional dan rasional
+                            hingga yang lebih ekspresif, tanpa kehilangan kontrol
+                            teknis.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-medium text-neutral-900">
+                            Structured Execution
+                        </h4>
+                        <p class="mt-2 text-neutral-600 leading-relaxed">
+                            Walaupun gaya fleksibel, sistem kerja tetap terukur:
+                            perencanaan, detail, dan koordinasi proyek tetap
+                            profesional.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    function init() {
+        const spacer = document.getElementById("intro-spacer");
+        const section = document.getElementById("intro-section");
+        const content = document.getElementById("intro-content");
+        if (!spacer || !section || !content) return;
+
+        const ctx = gsap.context(() => {
+            // Initial state: content datang dari kanan
+            gsap.set(content, { x: 120, opacity: 0 });
+
+            // Phase 1 — Enter: content slide masuk dari kanan ke kiri
+            // Terjadi saat 100dvh pertama dari spacer di-scroll
+            gsap.to(content, {
+                x: 0,
+                opacity: 1,
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: spacer,
+                    start: "top bottom",   // mulai saat spacer masuk viewport
+                    end: "top top",        // selesai saat spacer menyentuh top
+                    scrub: 1,
+                },
+            });
+
+            // Phase 2 — Hold + Exit: section ter-sticky, content menghilang ke kiri
+            // Terjadi saat 100dvh kedua hingga ketiga dari spacer di-scroll
+            gsap.to(content, {
+                x: -120,
+                opacity: 0,
+                ease: "power2.in",
+                scrollTrigger: {
+                    trigger: spacer,
+                    start: "top top",      // mulai saat spacer pas di top (section sudah sticky)
+                    end: "+=100%",         // selama 1 layar scroll
+                    scrub: 1,
+                },
+            });
+        }, spacer);
+
+        return ctx;
+    }
+
+    let ctx: any;
+
+    window.addEventListener("preloaderComplete", () => {
+        ctx = init();
+    });
+
+    document.addEventListener("astro:before-swap", () => {
+        if (ctx) ctx.revert();
+    });
+</script>

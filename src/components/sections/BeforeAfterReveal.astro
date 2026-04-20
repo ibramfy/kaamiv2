@@ -1,0 +1,243 @@
+---
+import { Sun, Moon } from "@lucide/astro";
+// BeforeAfterReveal.astro
+// Animasi: Image comparison slider dengan GSAP ScrollTrigger scrub
+---
+
+<section
+    id="before-after-section"
+    class="mx-auto max-w-7xl h-screen flex flex-col p-4 md:p-6"
+>
+    <!-- Header Text - Compact -->
+    <div
+        class="flex flex-col md:flex-row items-end justify-between gap-2 md:gap-4 border-b border-gray-100 pb-3 md:pb-4 shrink-0"
+    >
+        <h2
+            class="font-oswald text-xl md:text-2xl lg:text-3xl font-light tracking-tight text-left whitespace-nowrap"
+        >
+            kaami mendesign siang dan malam
+        </h2>
+
+        <p
+            class="text-[10px] md:text-xs text-gray-500 text-left md:text-right leading-relaxed max-w-[400px] md:max-w-[480px]"
+        >
+            ... demi memastikan setiap sudut ruang memiliki presisi<br />
+            sempurna serta kenyamanan maksimal bagi setiap orang yang menghuninya.
+        </p>
+    </div>
+
+    <!-- Before After Slider Container - Flexible height -->
+    <div
+        id="comparison-container"
+        class="relative flex-1 w-full overflow-hidden rounded-xl md:rounded-2xl min-h-0 my-3 md:my-4"
+    >
+        <!-- After Image (Background - Full width) -->
+        <div class="absolute inset-0 w-full h-full">
+            <img
+                src="/morning.png"
+                alt="After renovation"
+                class="w-full h-full object-cover"
+                draggable="false"
+            />
+            <!-- After Label - Top Right with Sun Icon -->
+            <span
+                class="absolute top-3 right-3 md:top-4 md:right-4 z-20 bg-white/90 text-black px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm flex items-center gap-1.5 shadow-sm"
+            >
+                <Sun size={14} class="text-orange-500" />
+                Siang
+            </span>
+        </div>
+
+        <!-- Before Image (Clipped - Left side) -->
+        <div
+            id="before-image"
+            class="absolute inset-0 w-full h-full overflow-hidden"
+            style="clip-path: inset(0 50% 0 0);"
+        >
+            <img
+                src="/night.png"
+                alt="Before renovation"
+                class="w-full h-full object-cover"
+                draggable="false"
+            />
+            <!-- Before Label - Top Left with Moon Icon -->
+            <span
+                class="absolute top-3 left-3 md:top-4 md:left-4 z-20 bg-black/70 text-white px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm flex items-center gap-1.5 shadow-sm"
+            >
+                <Moon size={14} class="text-blue-300" />
+                Malam
+            </span>
+        </div>
+
+        <!-- Center Text Overlay -->
+        <div
+            class="absolute inset-0 flex items-center justify-center pointer-events-none"
+        >
+            <p
+                class="text-lg md:text-2xl lg:text-3xl font-light tracking-tight text-white drop-shadow-lg text-center px-4"
+                style="text-shadow: 0 2px 10px rgba(0,0,0,0.5);"
+            >
+                kaami mendesign siang dan malam
+            </p>
+        </div>
+
+        <!-- Slider Handle -->
+        <div
+            id="slider-handle"
+            class="absolute top-0 bottom-0 w-0.5 md:w-1 bg-white cursor-ew-resize z-10 shadow-lg"
+            style="left: 50%;"
+        >
+            <div class="absolute inset-0 bg-white/50 blur-sm"></div>
+        </div>
+    </div>
+
+    <!-- Caption - Compact -->
+    <p class="text-center text-gray-500 text-xs md:text-sm shrink-0">
+        Slide to see the transformation — from concept to reality
+    </p>
+</section>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    function init() {
+        const section = document.getElementById("before-after-section");
+        if (!section) return;
+
+        const ctx = gsap.context(() => {
+            const container = section.querySelector("#comparison-container");
+            const beforeImage = section.querySelector("#before-image");
+            const sliderHandle = section.querySelector("#slider-handle");
+
+            if (!container || !beforeImage || !sliderHandle) return;
+
+            // ScrollTrigger Reveal Animation
+            gsap.to(container, {
+                scrollTrigger: {
+                    trigger: container,
+                    start: "top 85%",
+                    end: "top 50%",
+                    scrub: true,
+                },
+                opacity: 1,
+                y: 0,
+                ease: "none",
+            });
+
+            // Slider functionality
+            let isDragging = false;
+
+            function updateSlider(clientX: number) {
+                const rect = container.getBoundingClientRect();
+                let percentage = ((clientX - rect.left) / rect.width) * 100;
+
+                // Clamp between 0 and 100
+                percentage = Math.max(0, Math.min(100, percentage));
+
+                // Update clip-path and handle position
+                beforeImage.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
+                (sliderHandle as HTMLElement).style.left = `${percentage}%`;
+            }
+
+            // Mouse events
+            sliderHandle.addEventListener("mousedown", (e) => {
+                isDragging = true;
+                e.preventDefault();
+            });
+
+            container.addEventListener("mousedown", (e) => {
+                isDragging = true;
+                updateSlider(e.clientX);
+            });
+
+            document.addEventListener("mousemove", (e) => {
+                if (!isDragging) return;
+                updateSlider(e.clientX);
+            });
+
+            document.addEventListener("mouseup", () => {
+                isDragging = false;
+            });
+
+            // Touch events
+            sliderHandle.addEventListener(
+                "touchstart",
+                (e) => {
+                    isDragging = true;
+                },
+                { passive: true },
+            );
+
+            container.addEventListener(
+                "touchstart",
+                (e) => {
+                    isDragging = true;
+                    updateSlider(e.touches[0].clientX);
+                },
+                { passive: true },
+            );
+
+            document.addEventListener(
+                "touchmove",
+                (e) => {
+                    if (!isDragging) return;
+                    updateSlider(e.touches[0].clientX);
+                },
+                { passive: true },
+            );
+
+            document.addEventListener("touchend", () => {
+                isDragging = false;
+            });
+        }, section);
+
+        return ctx;
+    }
+
+    // Handle initial load and view transitions
+    let ctx: any;
+
+    // Check if preloader already completed
+    if ((window as any).preloaderCompleted) {
+        ctx = init();
+    } else {
+        window.addEventListener(
+            "preloaderComplete",
+            () => {
+                ctx = init();
+            },
+            { once: true },
+        );
+    }
+
+    document.addEventListener("astro:before-swap", () => {
+        if (ctx) ctx.revert();
+    });
+</script>
+
+<style>
+    /* Prevent text selection during drag */
+    #comparison-container {
+        opacity: 0; /* Mulai dari tidak terlihat untuk di-animate oleh GSAP */
+        transform: translateY(20px); /* Efek slide up sedikit */
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: pan-y;
+    }
+
+    /* Smooth cursor transition */
+    #comparison-container:active {
+        cursor: grabbing;
+    }
+
+    #slider-handle {
+        transition: box-shadow 0.2s ease;
+    }
+
+    #slider-handle:hover {
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+</style>

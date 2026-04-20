@@ -1,0 +1,85 @@
+---
+// TestimonialSlider.astro
+// Animasi: horizontal scroll tied to scroll progress via gsap.context()
+
+const testimonials = [
+    {
+        quote: "KAAMI transformed our vision into a",
+        highlight: "living masterpiece",
+        source: "Vogue Living",
+    },
+    {
+        quote: "An unparalleled attention to",
+        highlight: "minimalist detail",
+        source: "ArchDaily",
+    },
+    {
+        quote: "KAAMI transformed our vision into a",
+        highlight: "living masterpiece",
+        source: "Vogue Living",
+    },
+];
+---
+
+<section
+    id="testimonial-section"
+    class="relative h-[60vh] w-full overflow-hidden bg-[#F5F5F7] py-20 border-b border-gray-200"
+>
+    <div
+        id="testimonial-slider"
+        class="flex h-full items-center whitespace-nowrap px-6 will-change-transform"
+    >
+        {
+            testimonials.map((t) => (
+                <div class="inline-block px-12 text-4xl font-light text-gray-400 md:text-6xl lg:text-7xl">
+                    "{t.quote} <span class="text-[#1d1d1f]">{t.highlight}</span>
+                    ." -{" "}
+                    <span class="text-sm font-bold uppercase tracking-widest">
+                        {t.source}
+                    </span>
+                </div>
+            ))
+        }
+    </div>
+</section>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    function init() {
+        const section = document.getElementById("testimonial-section");
+        if (!section) return;
+
+        const ctx = gsap.context(() => {
+            const slider = section.querySelector<HTMLElement>(
+                "#testimonial-slider",
+            );
+            if (!slider) return;
+
+            gsap.to(slider, {
+                x: () => -(slider.scrollWidth - window.innerWidth),
+                ease: "none",
+                scrollTrigger: {
+                    trigger: section,
+                    start: "top bottom",
+                    end: "bottom top",
+                    scrub: 1,
+                },
+            });
+        }, section);
+
+        return ctx;
+    }
+
+    let ctx: any;
+    window.addEventListener("preloaderComplete", () => {
+        ctx = init();
+    });
+
+    document.addEventListener("astro:before-swap", () => {
+        if (ctx) ctx.revert();
+    });
+</script>

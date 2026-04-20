@@ -1,17 +1,37 @@
 ---
-
+import BaseLayout from "../layouts/BaseLayout.astro";
+import HeroUnmask from "../components/sections/HeroUnmask.astro";
+import BeforeAfterReveal from "../components/sections/BeforeAfterReveal.astro";
+// import HeroSequence from "../components/sections/HeroSequence.astro";
+import AboutReveal from "../components/sections/AboutReveal.astro";
+import NextAbout from "../components/sections/NextAbout.astro";
+import BentoGrid from "../components/sections/BentoGrid.astro";
+import Introduc from "..//components/sections/Introduc.astro";
+import Marque from "..//components/sections/Marque.astro";
+import PaymentSection from "..//components/sections/PaymentSection.astro";
+import StatsCounter from "../components/sections/StatsCounter.astro";
+import TestimonialSlider from "../components/sections/TestimonialSlider.astro";
+import CtaInteractive from "../components/sections/CtaInteractive.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title="Home">
+    <HeroUnmask />
+    <!-- <HeroSequence /> -->
+
+    <!-- Content wrapper designed to smoothly scroll over sticky HeroUnmask.
+       z-10 ensures it sits on top. -->
+    <div
+        class="relative z-10 rounded-t-[40px] bg-[#F5F5F7] px-6 py-32 md:px-15 lg:py-48 min-h-screen border-t border-gray-200"
+    >
+        <BeforeAfterReveal />
+        <AboutReveal />
+        <NextAbout />
+        <BentoGrid />
+        <Introduc />
+        <Marque />
+        <PaymentSection />
+        <StatsCounter />
+        <TestimonialSlider />
+        <CtaInteractive />
+    </div>
+</BaseLayout>

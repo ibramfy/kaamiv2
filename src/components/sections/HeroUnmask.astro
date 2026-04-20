@@ -1,0 +1,130 @@
+---
+// HeroUnmask.astro
+---
+
+<div id="hero-wrapper" class="relative">
+    <section
+        id="hero-section"
+        class="fixed top-0 left-0 w-full h-screen overflow-hidden bg-neutral-900 z-0"
+    >
+        <div
+            id="hero-clear"
+            class="absolute inset-0 bg-cover bg-center"
+            style="background-image: url('/unmask.png')"
+        >
+        </div>
+
+        <canvas id="hero-canvas" class="absolute inset-0 w-full h-full"
+        ></canvas>
+
+        <div
+            class="absolute inset-0 z-20 flex items-center px-10 md:px-20 pointer-events-none"
+        >
+            <div class="relative w-full h-full flex items-center">
+                <h2
+                    id="text-0"
+                    class="absolute left-0 text-white text-4xl md:text-6xl font-bold max-w-lg opacity-0"
+                >
+                    Bingung tidak punya pandangan design
+                </h2>
+                <h2
+                    id="text-1"
+                    class="absolute left-1/2 -translate-x-1/2 text-white text-4xl md:text-6xl font-bold text-center w-full opacity-0"
+                >
+                    Otak anda ngeblur
+                </h2>
+                <h2
+                    id="text-2"
+                    class="absolute right-0 text-white text-4xl md:text-6xl font-bold text-right max-w-lg opacity-0"
+                >
+                    Kami adalah solusinya
+                </h2>
+            </div>
+        </div>
+
+        <div
+            id="hero-cursor"
+            class="fixed top-0 left-0 w-8 h-8 rounded-full bg-white/50 pointer-events-none z-50 opacity-0 -translate-x-1/2 -translate-y-1/2 mix-blend-difference"
+        >
+        </div>
+    </section>
+
+    <div class="trigger-height w-full h-[300vh]"></div>
+</div>
+
+<script>
+    import gsap from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const canvas = document.getElementById("hero-canvas") as HTMLCanvasElement;
+    const ctx = canvas.getContext("2d")!;
+    const img = new Image();
+    img.src = "/unmask.png";
+
+    function initCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        ctx.filter = "blur(30px)";
+        ctx.drawImage(img, -50, -50, canvas.width + 100, canvas.height + 100);
+    }
+
+    function erase(x: number, y: number) {
+        ctx.globalCompositeOperation = "destination-out";
+        const g = ctx.createRadialGradient(x, y, 0, x, y, 150);
+        g.addColorStop(0, "rgba(0,0,0,1)");
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, 150, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+    }
+
+    function initGSAP() {
+        // Timeline untuk Text Stages
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: ".trigger-height",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1,
+            },
+        });
+
+        // Stage 0: Left (0% - 33%)
+        tl.to("#text-0", { opacity: 1, x: 20, duration: 1 })
+            .to("#text-0", { opacity: 0, x: 40, duration: 1 }, "+=0.5")
+
+            // Stage 1: Center (34% - 66%)
+            .to("#text-1", { opacity: 1, scale: 1.1, duration: 1 })
+            .to("#text-1", { opacity: 0, scale: 1.2, duration: 1 }, "+=0.5")
+
+            // Stage 2: Right (67% - 100%)
+            .to("#text-2", { opacity: 1, x: -20, duration: 1 });
+    }
+
+    img.onload = () => {
+        initCanvas();
+        initGSAP();
+    };
+
+    window.addEventListener("mousemove", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        gsap.to("#hero-cursor", {
+            x: e.clientX,
+            y: e.clientY,
+            opacity: 1,
+            duration: 0.2,
+        });
+        erase(e.clientX - rect.left, e.clientY - rect.top);
+    });
+</script>
+
+<style>
+    /* Menghindari glitch saat scrolling */
+    #hero-section {
+        will-change: transform;
+    }
+</style>

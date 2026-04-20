@@ -1,0 +1,101 @@
+---
+import { Ruler, Wrench, Settings } from "@lucide/astro";
+---
+
+<section
+    id="next-about-section"
+    class="flex min-h-screen flex-col items-center justify-center px-4"
+>
+    <p
+        id="next-about-reveal"
+        class="text-center text-3xl font-light leading-tight tracking-tight text-[#1d1d1f] md:text-5xl lg:text-7xl opacity-0"
+    >
+        Kami menghadirkan kualitas kerja yang konsisten melalui proses
+        <span class="inline-flex items-center gap-2">
+            <Ruler stroke-width={1.25} class="size-[0.8em]" />perancangan
+        </span>
+        dan
+        <span class="inline-flex items-center gap-2">
+            <Wrench stroke-width={1.25} class="size-[0.8em]" />pengerjaan
+        </span>
+        yang
+        <span class="inline-flex items-center gap-2">
+            <Settings stroke-width={1.25} class="size-[0.8em]" />profesional
+        </span>.
+    </p>
+</section>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+    import SplitType from "split-type";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    function initNextAbout() {
+        const section = document.getElementById("next-about-section");
+        if (!section) return;
+
+        const ctx = gsap.context(() => {
+            const textEl = section.querySelector<HTMLElement>("#next-about-reveal");
+            if (!textEl) return;
+
+            const split = new SplitType(textEl, { types: "lines,words" });
+
+            // Kumpulkan semua SVG di dalam paragraph (Ruler, Wrench, Settings)
+            // SplitType tidak menyertakan SVG dalam split.words, jadi kita tangani manual
+            const svgEls = Array.from(textEl.querySelectorAll<SVGElement>("svg"));
+
+            // Semua animatable elements = kata + SVG
+            const allEls = [...(split.words ?? []), ...svgEls];
+
+            // Hapus class opacity-0 dari container setelah displit
+            gsap.set(textEl, { opacity: 1 });
+            // Sembunyikan kata-kata DAN SVG di awal
+            gsap.set(allEls, { opacity: 0, y: 50 });
+
+            // Timeline utama dengan pin — extend end agar ada ruang untuk fade out
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: section,
+                    start: "top top",
+                    end: "+=150%", // 50% extra di akhir untuk animasi fade-out
+                    pin: true,
+                    scrub: true,
+                },
+            });
+
+            // Phase 1 — Fade IN: semua elemen masuk (0 → 66% dari timeline)
+            tl.to(allEls, {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                stagger: 0.05,
+                ease: "power2.out",
+            });
+
+            // Jeda singkat di tengah (elemen fully visible)
+            tl.to({}, { duration: 0.5 });
+
+            // Phase 2 — Fade OUT: elemen pergi ke atas sebelum section unpin (sisa 33%)
+            tl.to(allEls, {
+                opacity: 0,
+                y: -40,
+                duration: 0.8,
+                stagger: 0.03,
+                ease: "power2.in",
+            });
+        }, section);
+
+        return ctx;
+    }
+
+    let ctxNext: any;
+    window.addEventListener("preloaderComplete", () => {
+        ctxNext = initNextAbout();
+    });
+
+    document.addEventListener("astro:before-swap", () => {
+        if (ctxNext) ctxNext.revert();
+    });
+</script>

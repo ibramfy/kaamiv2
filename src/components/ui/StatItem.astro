@@ -1,0 +1,18 @@
+---
+interface Props {
+    target: number;
+    label: string;
+    suffix?: string;
+}
+
+const { target, label, suffix = "" } = Astro.props;
+---
+
+<div class="stat-item flex flex-col items-center">
+    <span class="text-6xl font-light text-[#1d1d1f]">
+        <span class="counter" data-target={target}>0</span>{suffix}
+    </span>
+    <span class="mt-2 text-sm font-light tracking-widest text-gray-500 uppercase text-center">
+        {label}
+    </span>
+</div>

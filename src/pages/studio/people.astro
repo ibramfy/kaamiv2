@@ -1,0 +1,187 @@
+---
+import PersonCard from "../../components/cards/PersonCard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const people = [
+    // Baris 1
+    { name: "Ardi Pratama", role: "Principal Architect", bio: "Focused on climate-responsive architecture." },
+    { name: "Maya Santoso", role: "Design Director", bio: "Exploring material honesty." },
+    { name: "Raka Wijaya", role: "Project Architect", bio: "Leading hospitality developments." },
+    { name: "Sinta Laksmi", role: "Interior Architect", bio: "Detail-oriented strategist." },
+    { name: "Fajar Nugroho", role: "Architectural Designer", bio: "Computational design systems." },
+    // Baris 2
+    { name: "Dewi Kusuma", role: "Senior Architect", bio: "Sustainable design specialist." },
+    { name: "Bima Sakti", role: "Urban Designer", bio: "Public space researcher." },
+    { name: "Citra Lestari", role: "Landscape Architect", bio: "Biophilic design advocate." },
+    { name: "Eka Putra", role: "Technical Director", bio: "BIM implementation expert." },
+    { name: "Gita Handayani", role: "Visualization Lead", bio: "Architectural storytelling." },
+    // Baris 3
+    { name: "Hadi Wibowo", role: "Junior Architect", bio: "Emerging technologies." },
+    { name: "Indah Permata", role: "Interior Designer", bio: "Material research focus." },
+    { name: "Joko Santoso", role: "Project Manager", bio: "Construction administration." },
+    { name: "Kirana Sari", role: "Design Researcher", bio: "Academic collaboration." },
+    { name: "Lutfi Ramadhan", role: "3D Artist", bio: "Photorealistic rendering." },
+];
+
+const rows = [
+    people.slice(0, 5),
+    people.slice(5, 10),
+    people.slice(10, 15)
+];
+---
+
+<BaseLayout title="People">
+    <section class="min-h-screen bg-[#F5F5F7] px-6 py-32 md:px-20">
+
+        <!-- Header -->
+        <div class="text-center mb-16">
+            <p class="uppercase text-lg font-light text-[#1d1d1f]">
+                the People.
+            </p>
+        </div>
+
+        <!-- Container dengan gap antar baris -->
+        <div id="people-container" class="relative space-y-8 lg:space-y-10 pb-20">
+
+            {rows.map((rowPeople, rowIndex) => (
+                <div class="row-wrapper relative" data-row={rowIndex}>
+
+                    <!-- Grid Target (invisible, menentukan layout) -->
+                    <div class="target-grid grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5 lg:gap-10 opacity-0">
+                        {rowPeople.map((person) => (
+                            <div class="target-slot aspect-[3/4]">
+                                <PersonCard person={person} />
+                            </div>
+                        ))}
+                    </div>
+
+                    <!-- Stack Container (absolute, menutupi grid) -->
+                    <div class="stack-container absolute inset-0 pointer-events-none">
+                        <div class="relative w-full h-full flex justify-center">
+                            <!-- Wrapper untuk stack di tengah -->
+                            <div class="stack-wrapper relative w-full sm:w-1/2 lg:w-[calc(20%-2rem)] h-full">
+                                {rowPeople.map((person, colIndex) => (
+                                    <div
+                                        class="person-card absolute top-0 left-0 w-full will-change-transform cursor-pointer"
+                                        data-row={rowIndex}
+                                        data-col={colIndex}
+                                    >
+                                        <PersonCard person={person} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            ))}
+
+        </div>
+
+    </section>
+</BaseLayout>
+
+<script>
+    import { gsap } from "gsap";
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const container = document.getElementById('people-container');
+        const centerCol = 2;
+
+        // Dapatkan posisi target per baris
+        const getRowTargets = (rowIndex) => {
+            const rowWrapper = container.querySelector(`.row-wrapper[data-row="${rowIndex}"]`);
+            const targets = rowWrapper.querySelectorAll('.target-slot');
+            const wrapperRect = rowWrapper.getBoundingClientRect();
+
+            return Array.from(targets).map(slot => {
+                const rect = slot.getBoundingClientRect();
+                return {
+                    x: rect.left - wrapperRect.left,
+                    y: rect.top - wrapperRect.top,
+                    width: rect.width,
+                    height: rect.height,
+                    centerX: rect.left - wrapperRect.left + rect.width / 2,
+                    centerY: rect.top - wrapperRect.top + rect.height / 2
+                };
+            });
+        };
+
+        // Animasi per baris
+        const animateRow = (rowIndex, delayStart) => {
+            const rowWrapper = container.querySelector(`.row-wrapper[data-row="${rowIndex}"]`);
+            const cards = Array.from(rowWrapper.querySelectorAll('.person-card'));
+            const targets = getRowTargets(rowIndex);
+            const centerTarget = targets[centerCol];
+
+            // Set initial - semua di tengah
+            cards.forEach((card, i) => {
+                gsap.set(card, {
+                    x: 0,
+                    y: 0,
+                    rotation: 0,
+                    scale: 1,
+                    zIndex: 50 + i
+                });
+            });
+
+            const tl = gsap.timeline({ delay: delayStart });
+
+            // Shuffle
+            cards.forEach((card, i) => {
+                tl.to(card, {
+                    rotation: gsap.utils.random(-12, 12),
+                    y: gsap.utils.random(-25, 25),
+                    x: gsap.utils.random(-15, 15),
+                    duration: 0.5,
+                    ease: "power2.inOut"
+                }, i * 0.03);
+            });
+
+            // Distribusi: kiri (1,0) → kanan (3,4)
+            [1, 0, 3, 4].forEach((colIdx, i) => {
+                const card = cards[colIdx];
+                const target = targets[colIdx];
+
+                tl.to(card, {
+                    x: target.x - centerTarget.x,
+                    y: target.y - centerTarget.y,
+                    rotation: 0,
+                    duration: 0.7,
+                    ease: "power3.out",
+                    zIndex: 20
+                }, "+=0.08");
+            });
+
+            // Center card (index 2) stay
+            tl.to(cards[2], {
+                rotation: 0,
+                x: 0,
+                y: 0,
+                duration: 0.6,
+                ease: "power2.out",
+                zIndex: rowIndex === 1 ? 100 : 30
+            }, "<0.15");
+
+            return tl;
+        };
+
+        // Master timeline
+        const masterTl = gsap.timeline();
+
+        // Baris tengah dulu, lalu atas & bawah bersamaan
+        masterTl.add(animateRow(1, 0), 0);
+        masterTl.add(animateRow(0, 0.2), 0.15);
+        masterTl.add(animateRow(2, 0.2), 0.15);
+
+        // Cleanup
+        masterTl.add(() => {
+            document.querySelectorAll('.stack-container').forEach(s => {
+                s.style.pointerEvents = 'none';
+            });
+            document.querySelectorAll('.person-card').forEach(c => {
+                c.style.pointerEvents = 'auto';
+            });
+        });
+    });
+</script>

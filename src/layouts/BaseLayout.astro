@@ -1,0 +1,93 @@
+---
+import "../styles/globals.css";
+import Preloader from "../components/layout/Preloader.astro";
+import Navbar from "../components/layout/Navbar.astro";
+import FloatingCTA from "../components/ui/FloatingCTA.astro";
+
+interface Props {
+    title: string;
+    description?: string;
+}
+
+const {
+    title,
+    description = "Awwwards-winning Architecture Studio Web Experience",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="description" content={description} />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+        />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="generator" content={Astro.generator} />
+        <title>{title} | KAAMI Studio</title>
+    </head>
+    <body class="bg-[#F5F5F7] text-[#1d1d1f] antialiased">
+        <Preloader />
+        <Navbar />
+
+        <main id="smooth-wrapper">
+            <div id="smooth-content">
+                <slot />
+            </div>
+        </main>
+        <FloatingCTA />
+
+        <script>
+            import Lenis from "@studio-freight/lenis";
+            import { gsap } from "gsap";
+            import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Initialize Lenis exactly once and expose to window
+            const initLenis = () => {
+                if (window.lenis) return;
+
+                const lenis = new Lenis({
+                    duration: 1.2,
+                    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                    orientation: "vertical",
+                    gestureOrientation: "vertical",
+                    smoothWheel: true,
+                    wheelMultiplier: 1,
+                    smoothTouch: false,
+                    touchMultiplier: 2,
+                    infinite: false,
+                });
+
+                // Integrate Lenis with GSAP ScrollTrigger
+                lenis.on("scroll", ScrollTrigger.update);
+
+                gsap.ticker.add((time) => {
+                    lenis.raf(time * 1000);
+                });
+
+                gsap.ticker.lagSmoothing(0);
+
+                // Expose to window for global access
+                window.lenis = lenis;
+            };
+
+            // Ensure init runs on hard navigation
+            initLenis();
+
+            // Ensure init runs on Astro View Transitions
+            document.addEventListener("astro:page-load", initLenis);
+
+            // Stop Lenis during preloader
+            if (window.lenis) {
+                window.lenis.stop();
+                window.addEventListener("preloaderComplete", () => {
+                    window.lenis.start();
+                });
+            }
+        </script>
+    </body>
+</html>

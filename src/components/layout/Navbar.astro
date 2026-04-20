@@ -1,0 +1,260 @@
+---
+// src/components/layout/Navbar.astro
+---
+
+<header
+    class="fixed inset-x-0 top-[10px] z-50 flex w-full justify-center px-4 pt-0 md:px-0 pointer-events-none transition-all"
+>
+    <div
+        id="main-header"
+        class="pointer-events-auto flex w-full max-w-full flex-col items-center bg-transparent px-6 py-0 md:px-12 origin-top"
+    >
+        <!-- Main Row -->
+        <div class="flex w-full max-w-screen-2xl items-start justify-between">
+            <!-- Logo (Fixed Width 100px) -->
+            <div class="flex h-10 w-[100px] items-center justify-start">
+                <a
+                    href="/"
+                    class="relative z-[60] text-2xl text-sm uppercase tracking-widest text-[#1d1d1f] transition-colors duration-500 hover:text-gray-500"
+                >
+                    KaamiArchitects
+                </a>
+            </div>
+
+            <!-- Desktop Navigation -->
+            <nav
+                class="hidden md:flex flex-1 items-start justify-center gap-x-16"
+            >
+                <!-- Architecture Menu -->
+                <div
+                    class="menu-wrapper flex flex-col items-start"
+                    data-menu="architecture"
+                >
+                    <button
+                        type="button"
+                        class="menu-trigger flex h-10 items-center text-sm font-medium uppercase tracking-widest text-[#1d1d1f] transition-colors duration-500 hover:text-gray-500"
+                    >
+                        Architecture
+                    </button>
+                    <!-- Submenu -->
+                    <div
+                        class="submenu overflow-hidden relative h-0 invisible opacity-0"
+                    >
+                        <div class="flex flex-col gap-3 pb-4 pt-4 text-left">
+                            <a
+                                href="/architecture/commercial"
+                                class="submenu-item block text-xs font-semibold uppercase tracking-[0.15em] text-[#1d1d1f] transition-all duration-300 ease-out hover:tracking-[0.25em] hover:translate-x-2 hover:text-gray-500"
+                                >Commercial</a
+                            >
+                            <a
+                                href="/architecture/hospitality"
+                                class="submenu-item block text-xs font-semibold uppercase tracking-[0.15em] text-[#1d1d1f] transition-all duration-300 ease-out hover:tracking-[0.25em] hover:translate-x-2 hover:text-gray-500"
+                                >Hospitality</a
+                            >
+                            <a
+                                href="/architecture/residential"
+                                class="submenu-item block text-xs font-semibold uppercase tracking-[0.15em] text-[#1d1d1f] transition-all duration-300 ease-out hover:tracking-[0.25em] hover:translate-x-2 hover:text-gray-500"
+                                >Residential</a
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Studio Menu -->
+                <div
+                    class="menu-wrapper flex flex-col items-start"
+                    data-menu="studio"
+                >
+                    <button
+                        type="button"
+                        class="menu-trigger flex h-10 items-center text-sm font-medium uppercase tracking-widest text-[#1d1d1f] transition-colors duration-500 hover:text-gray-500"
+                    >
+                        Studio
+                    </button>
+                    <!-- Submenu -->
+                    <div
+                        class="submenu overflow-hidden relative h-0 invisible opacity-0"
+                    >
+                        <div class="flex flex-col gap-3 pb-4 pt-4 text-left">
+                            <a
+                                href="/studio/about"
+                                class="submenu-item block text-xs font-semibold uppercase tracking-[0.15em] text-[#1d1d1f] transition-all duration-300 ease-out hover:tracking-[0.25em] hover:translate-x-2 hover:text-gray-500"
+                                >About</a
+                            >
+                            <a
+                                href="/studio/contact"
+                                class="submenu-item block text-xs font-semibold uppercase tracking-[0.15em] text-[#1d1d1f] transition-all duration-300 ease-out hover:tracking-[0.25em] hover:translate-x-2 hover:text-gray-500"
+                                >Contact</a
+                            >
+                            <a
+                                href="/studio/jobs"
+                                class="submenu-item block text-xs font-semibold uppercase tracking-[0.15em] text-[#1d1d1f] transition-all duration-300 ease-out hover:tracking-[0.25em] hover:translate-x-2 hover:text-gray-500"
+                                >Jobs</a
+                            >
+                            <a
+                                href="/studio/people"
+                                class="submenu-item block text-xs font-semibold uppercase tracking-[0.15em] text-[#1d1d1f] transition-all duration-300 ease-out hover:tracking-[0.25em] hover:translate-x-2 hover:text-gray-500"
+                                >People</a
+                            >
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Hamburger (Mobile) -->
+            <div class="flex h-10 w-[100px] items-center justify-end">
+                <button
+                    id="menu-toggle"
+                    class="relative z-[60] flex h-10 w-10 items-center justify-center rounded-full text-[#1d1d1f] transition-all duration-500 hover:scale-110 hover:bg-black/5 active:scale-95 md:hidden"
+                    aria-label="Toggle Menu"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <line x1="4" x2="20" y1="12" y2="12"></line>
+                        <line x1="4" x2="20" y1="6" y2="6"></line>
+                        <line x1="4" x2="20" y1="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    document.addEventListener("DOMContentLoaded", () => {
+        gsap.registerPlugin(ScrollTrigger);
+
+        const mainHeader = document.getElementById("main-header");
+        const wrappers = document.querySelectorAll(".menu-wrapper");
+
+        let activeWrapper = null;
+
+        // ── Scroll → Dynamic Island ───────────────────────────────────────
+        ScrollTrigger.create({
+            trigger: "body",
+            start: "50px top",
+            end: "+=1",
+            onEnter: () => {
+                gsap.to(mainHeader, {
+                    maxWidth: "1024px",
+                    y: 0,
+                    backgroundColor: "rgba(245, 245, 247, 0.95)",
+                    backdropFilter: "blur(16px)",
+                    boxShadow:
+                        "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+                    borderRadius: "1rem",
+                    // ✅ KONSISTEN: Gunakan nilai yang sama dengan default Tailwind
+                    paddingLeft: window.innerWidth >= 768 ? "3rem" : "1.5rem", // md:px-12 (48px) : px-6 (24px)
+                    paddingRight: window.innerWidth >= 768 ? "3rem" : "1.5rem",
+                    paddingTop: "6px",
+                    paddingBottom: "6px",
+                    duration: 0.5,
+                    ease: "power3.out",
+                    overwrite: "auto",
+                });
+            },
+            onLeaveBack: () => {
+                gsap.to(mainHeader, {
+                    maxWidth: "100%",
+                    y: 0,
+                    backgroundColor: "transparent",
+                    backdropFilter: "blur(0px)",
+                    boxShadow: "0 0px 0px 0px rgba(0,0,0,0)",
+                    borderRadius: "0rem",
+                    // ✅ KONSISTEN: Sama persis dengan nilai default
+                    paddingLeft: window.innerWidth >= 768 ? "3rem" : "1.5rem",
+                    paddingRight: window.innerWidth >= 768 ? "3rem" : "1.5rem",
+                    paddingTop: "6px",
+                    paddingBottom: "6px",
+                    duration: 0.5,
+                    ease: "power3.out",
+                    overwrite: "auto",
+                    // ✅ Hapus clearProps yang tidak perlu, atau batasi hanya ke properti tertentu
+                    onComplete: () => {
+                        // Hanya clear properti yang memang harus di-reset, bukan padding
+                        gsap.set(mainHeader, {
+                            clearProps:
+                                "maxWidth,y,backgroundColor,backdropFilter,boxShadow,borderRadius",
+                        });
+                    },
+                });
+            },
+        });
+
+        // ── Dropdown Hover Animations ───────────────────────────────────────
+        function openDropdown(wrapper, submenu, items) {
+            // Kill active timeline to avoid conflicts
+            if (wrapper._gsapTl) wrapper._gsapTl.kill();
+
+            const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+            tl.to(submenu, {
+                height: "auto",
+                autoAlpha: 1, // handles visibility and opacity
+                duration: 0.4,
+            }).fromTo(
+                items,
+                {
+                    y: 10,
+                    opacity: 0,
+                },
+                {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.3,
+                    stagger: 0.05,
+                },
+                "-=0.2",
+            );
+
+            wrapper._gsapTl = tl;
+        }
+
+        function closeDropdown(wrapper) {
+            if (wrapper._gsapTl) wrapper._gsapTl.kill();
+            const submenu = wrapper.querySelector(".submenu");
+
+            const tl = gsap.timeline({ defaults: { ease: "power3.in" } });
+            tl.to(submenu, {
+                height: 0,
+                autoAlpha: 0,
+                duration: 0.3,
+            });
+
+            wrapper._gsapTl = tl;
+        }
+
+        wrappers.forEach((wrapper) => {
+            const submenu = wrapper.querySelector(".submenu");
+            const items = wrapper.querySelectorAll(".submenu-item");
+
+            wrapper.addEventListener("mouseenter", () => {
+                // Mutually exclusive: close previous active menu
+                if (activeWrapper && activeWrapper !== wrapper) {
+                    closeDropdown(activeWrapper);
+                }
+                activeWrapper = wrapper;
+                openDropdown(wrapper, submenu, items);
+            });
+        });
+
+        mainHeader.addEventListener("mouseleave", () => {
+            if (activeWrapper) {
+                closeDropdown(activeWrapper);
+                activeWrapper = null;
+            }
+        });
+    });
+</script>

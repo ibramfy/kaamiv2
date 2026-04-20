@@ -1,0 +1,32 @@
+---
+interface Props {
+    project: {
+        title: string;
+        description: string;
+        year: string;
+    };
+    category: string;
+}
+
+const { project, category } = Astro.props;
+---
+
+<div class="flex h-full flex-col">
+    <!-- Image -->
+    <div class="h-[420px] w-full bg-neutral-200 rounded-2xl"></div>
+
+    <!-- Text -->
+    <div class="mt-6 flex flex-1 flex-col space-y-3">
+        <h3 class="text-xl font-medium text-[#1d1d1f] line-clamp-1">
+            {project.title}
+        </h3>
+
+        <p class="text-sm leading-relaxed text-neutral-600 line-clamp-2">
+            {project.description}
+        </p>
+
+        <p class="mt-auto text-xs uppercase tracking-widest text-neutral-400">
+            {category} · {project.year}
+        </p>
+    </div>
+</div>
