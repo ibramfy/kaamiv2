@@ -10,7 +10,7 @@ import BentoCard from "../ui/BentoCard.astro";
 >
     <div
         id="bento-top"
-        class="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-3 h-[25vh] md:h-[30vh]"
+        class="font-mono grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-3 h-[25vh] md:h-[30vh]"
     >
         <BentoCard
             image="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800"
@@ -47,7 +47,7 @@ import BentoCard from "../ui/BentoCard.astro";
 
     <div
         id="bento-bottom"
-        class="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-3 h-[25vh] md:h-[30vh]"
+        class="font-mono grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-3 h-[25vh] md:h-[30vh]"
     >
         <BentoCard
             image="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&q=80&w=800"
@@ -139,24 +139,36 @@ import BentoCard from "../ui/BentoCard.astro";
             const tlOut = gsap.timeline({
                 scrollTrigger: {
                     trigger: section,
-                    start: "top top",   // section penuh = mulai pin
-                    end: "+=80%",       // hold 80vh untuk ruang animasi keluar
+                    start: "top top", // section penuh = mulai pin
+                    end: "+=80%", // hold 80vh untuk ruang animasi keluar
                     pin: true,
-                    scrub: 1,           // Samakan dengan scrub di atas agar sama smooth-nya
+                    scrub: 1, // Samakan dengan scrub di atas agar sama smooth-nya
                 },
             });
 
             // Grid atas: lanjut ke kanan sambil fade out perlahan
             tlOut.to(
                 topGridItems,
-                { x: 300, opacity: 0, stagger: 0.05, ease: "none", duration: 1 },
+                {
+                    x: 300,
+                    opacity: 0,
+                    stagger: 0.05,
+                    ease: "none",
+                    duration: 1,
+                },
                 0,
             );
 
             // Grid bawah: lanjut ke kiri sambil fade out perlahan
             tlOut.to(
                 bottomGridItems,
-                { x: -300, opacity: 0, stagger: 0.05, ease: "none", duration: 1 },
+                {
+                    x: -300,
+                    opacity: 0,
+                    stagger: 0.05,
+                    ease: "none",
+                    duration: 1,
+                },
                 0,
             );
 

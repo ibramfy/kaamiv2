@@ -10,7 +10,7 @@
         <div
             id="hero-clear"
             class="absolute inset-0 bg-cover bg-center"
-            style="background-image: url('/unmask.png')"
+            style="background-image: url('/unmask.webp')"
         >
         </div>
 
@@ -23,29 +23,23 @@
             <div class="relative w-full h-full flex items-center">
                 <h2
                     id="text-0"
-                    class="absolute left-0 text-white text-4xl md:text-6xl font-bold max-w-lg opacity-0"
+                    class="font-stencil absolute left-0 text-white text-4xl md:text-5xl max-w-lg opacity-0"
                 >
                     Bingung tidak punya pandangan design
                 </h2>
                 <h2
                     id="text-1"
-                    class="absolute left-1/2 -translate-x-1/2 text-white text-4xl md:text-6xl font-bold text-center w-full opacity-0"
+                    class="absolute left-1/2 -translate-x-1/2 text-white text-4xl md:text-5xl font-stencil text-center w-full opacity-0"
                 >
                     Otak anda ngeblur
                 </h2>
                 <h2
                     id="text-2"
-                    class="absolute right-0 text-white text-4xl md:text-6xl font-bold text-right max-w-lg opacity-0"
+                    class="absolute right-0 text-white text-4xl md:text-5xl font-stencil text-right max-w-lg opacity-0"
                 >
                     Kami adalah solusinya
                 </h2>
             </div>
-        </div>
-
-        <div
-            id="hero-cursor"
-            class="fixed top-0 left-0 w-8 h-8 rounded-full bg-white/50 pointer-events-none z-50 opacity-0 -translate-x-1/2 -translate-y-1/2 mix-blend-difference"
-        >
         </div>
     </section>
 
@@ -61,7 +55,7 @@
     const canvas = document.getElementById("hero-canvas") as HTMLCanvasElement;
     const ctx = canvas.getContext("2d")!;
     const img = new Image();
-    img.src = "/unmask.png";
+    img.src = "/unmask.webp";
 
     function initCanvas() {
         canvas.width = window.innerWidth;
@@ -73,8 +67,15 @@
     function erase(x: number, y: number) {
         ctx.globalCompositeOperation = "destination-out";
         const g = ctx.createRadialGradient(x, y, 0, x, y, 150);
+
+        // Core: fully transparent (pusat benar-benar hapus)
         g.addColorStop(0, "rgba(0,0,0,1)");
+        // Mid: smooth transition
+        g.addColorStop(0.4, "rgba(0,0,0,0.8)");
+        // Edge: feathered fade out
+        g.addColorStop(0.8, "rgba(0,0,0,0.2)");
         g.addColorStop(1, "rgba(0,0,0,0)");
+
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc(x, y, 150, 0, Math.PI * 2);

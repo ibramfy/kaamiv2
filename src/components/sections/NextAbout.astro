@@ -8,7 +8,7 @@ import { Ruler, Wrench, Settings } from "@lucide/astro";
 >
     <p
         id="next-about-reveal"
-        class="text-center text-3xl font-light leading-tight tracking-tight text-[#1d1d1f] md:text-5xl lg:text-7xl opacity-0"
+        class="text-center text-3xl font-light leading-tight tracking-tight text-[#1d1d1f] md:text-4xl lg:text-5xl opacity-0"
     >
         Kami menghadirkan kualitas kerja yang konsisten melalui proses
         <span class="inline-flex items-center gap-2">
@@ -37,14 +37,17 @@ import { Ruler, Wrench, Settings } from "@lucide/astro";
         if (!section) return;
 
         const ctx = gsap.context(() => {
-            const textEl = section.querySelector<HTMLElement>("#next-about-reveal");
+            const textEl =
+                section.querySelector<HTMLElement>("#next-about-reveal");
             if (!textEl) return;
 
             const split = new SplitType(textEl, { types: "lines,words" });
 
             // Kumpulkan semua SVG di dalam paragraph (Ruler, Wrench, Settings)
             // SplitType tidak menyertakan SVG dalam split.words, jadi kita tangani manual
-            const svgEls = Array.from(textEl.querySelectorAll<SVGElement>("svg"));
+            const svgEls = Array.from(
+                textEl.querySelectorAll<SVGElement>("svg"),
+            );
 
             // Semua animatable elements = kata + SVG
             const allEls = [...(split.words ?? []), ...svgEls];
